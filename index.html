@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Box Game</title>
+	<link href="https://fonts.googleapis.com/css?family=Barrio" rel="stylesheet">
+  <!-- <link href="https://fonts.googleapis.com/css?family=Candal" rel="stylesheet"> -->
+	<link rel="stylesheet" type="text/css" href="dots.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+	<script type="text/javascript" src="ngdots.js"></script>
+
+</head>
+<body>
+	<div id="container" ng-cloak ng-app="box_game" ng-controller="box_ctrl">
+
+		<!-- COUNT DOWN -->
+		<div class="countDown">
+			<div class="countDownBox">
+				<span>3</span>
+			</div>
+		</div>
+
+		<!-- AUDIO -->
+		<audio id="myAudio" autoplay loop>
+			<source type="audio/ogg" src="audio/preGameMusic.wav">
+		</audio>
+
+		<!-- GAME TOPBAR -->
+		<div id="reset" ng-click="reset()"><span id="reset_text" class="top_bar_text">{{headerText}}</span></div>
+		<div id="top_bar">
+			<div id="scoreboard">
+				<div id="me"><span class="my_score top_bar_text">{{my_score}}</span></div>
+				<div id="you"><span class="your_score top_bar_text opacity">{{your_score}}</span></div>
+			</div>
+			<div id="timer">
+          <span class="top_bar_text">
+              <span>{{timer_mins}}:{{timer_secs}}</span>
+          </span>
+      </div>
+		</div>
+
+		<!-- GAME BOARD -->
+    <div id="gameLiner">
+        <div id="gameboard">
+						<div id="clickCircle"></div>
+            <div class="grid" id="{{x}}" data="{{x}}" ng-repeat="x in grid" ng-controller="line_click" ng-click="computerTurn || edge_click($event)" style="background-color: rgb(255,255,255)">
+                <div class="checker" data="0"></div>
+                <div id="top" class="side" data="false"></div>
+                <div id="right" class="side" data="false"></div>
+                <div id="bottom" class="side" data="false"></div>
+                <div id="left" class="side" data="false"></div>
+            </div>
+        </div>
+    </div>
+
+		<!-- MAIN MENU -->
+		<div class="menuPage" ng-controller="outOfGamePlayFunction">
+			<div class="edgePanel"></div>
+			<div id="middlePanel">
+				<div class="quickStart" ng-click="play()"> {{quickStart}} <span>2 minute game</span></div>
+				<div class="directions"> {{directions}} </div>
+			</div>
+			<div class="edgePanel"></div>
+		</div>
+
+		<!-- GAME END RESULTS -->
+		<div class="gameCompletionPage" ng-controller="outOfGamePlayFunction">
+			<div class="back">
+				<div class="mainButton" ng-click="mainMenu()">
+					<span ng-click="mainMenu()">{{menu}}</span>
+				</div>
+			</div>
+			<div class="edgePanel"></div>
+			<div id="middlePanel">
+				<div class="winStatus"> {{winStatus}}	</div>
+				<div class="score"> {{score}} </div>
+				<div class="stars">
+					<div class="starOne"><img src="star.png" alt=""></div>
+					<div class="starTwo"><img src="star.png" alt=""></div>
+					<div class="starThree"><img src="star.png" alt=""></div>
+				</div>
+			</div>
+			<div class="edgePanel"></div>
+		</div>
+	</div>
+</body>
+</html>
