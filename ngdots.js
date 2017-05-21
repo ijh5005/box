@@ -2,7 +2,7 @@
 
 var app = angular.module("box_game", []);
 
-app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$filter", "turn_update", "data",function ($scope, $rootScope, $timeout, $interval, $filter, turn_update, data) {
+app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$filter", "turn_update", "data", function ($scope, $rootScope, $timeout, $interval, $filter, turn_update, data) {
 
   /**********  application variables  **********/
   $scope.developer = "Developed By: Isaiah Harrison";
@@ -19,7 +19,7 @@ app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$f
   $rootScope.gridLength = 64;
   $rootScope.pathFinder;
   $rootScope.endGame = false;
-  $rootScope.volume = 0.1;
+  $rootScope.volume = 0.25;
   $rootScope.music = 1;
   //used to ngRepeat through the grid squares
   $scope.grid = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
@@ -28,8 +28,6 @@ app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$f
   //used to indicate whos turn it is (even#: myturn, odd#: yourturn)
   $rootScope.whos_turn = 0;
   /**********  complete: application variables  **********/
-
-
 
   //SPLASH SCREEN
   $rootScope.pregameMusic = document.getElementById("myAudio");
@@ -76,6 +74,8 @@ app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$f
 
   /**********  reset button  **********/
       $scope.reset = () => {
+        //reset click streak
+        $rootScope.clickStreakInGame = 0;
         $scope.play();
         $rootScope.whos_turn = 0;
         $timeout(function () {
@@ -264,12 +264,15 @@ app.controller("line_click", ["$scope", "$rootScope", "$filter", "$timeout", "da
       const isComputerTurn = (($rootScope.whos_turn%2 != 0) && ($rootScope.disabled == false));
       //cache the computer's move response time to use in the timeout
       const computerResponseTime = 400;
-
+      if(!isComputerTurn){
+        $rootScope.clickStreakInGame++;
+        click.updateStreak($rootScope.clickStreakInGame);
+      }
       //delay computer turn
       $timeout( function () {
 
           if(isComputerTurn){
-
+              $rootScope.clickStreakInGame = 0;
               //check for boxes with 0-3 lines to decide the best move
               const noLine = $(".grid").children(".checker[data=0]").parent().attr("data");
               const oneLine = $(".grid").children(".checker[data=1]").parent().attr("data");
@@ -326,7 +329,7 @@ app.controller("line_click", ["$scope", "$rootScope", "$filter", "$timeout", "da
 
 }]);
 
-app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$timeout", function($scope, $rootScope, $interval, $timeout) {
+app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$timeout", "calc", function($scope, $rootScope, $interval, $timeout, calc) {
 
   $rootScope.winStatus = "";
   $scope.menu = "Main Menu"
@@ -337,30 +340,48 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
   $scope.settingsVolume = "volume";
   $scope.music = "music";
   $scope.gameplaySounds = "gameplay sounds";
+  $scope.bestFinishTime = "best finish time";
+  $scope.highestScore = "highest score";
+  $scope.clickStreak = "click streak";
+  $rootScope.bestFinishTimeValue = localStorage.bestFinishTime || "99:99";
+  $rootScope.highestScoreValue = localStorage.highestScore || 0;
+  $rootScope.clickStreakValue = localStorage.clickStreak || 0;
+  $rootScope.points = 0;
   $scope.switch1 = "on";
   $scope.switch2 = "on";
   $rootScope.score = 0;
-  $scope.points = 100;
-  $scope.starOne = true;
-  $scope.starTwo = true;
-  $scope.starThree = true;
   $scope.endGameWatch = true;
+  $rootScope.clickStreakInGame = 0;
+  $rootScope.highestGameStreak = 0;
 
   //increment speed for end game score
   let incrementSpeed = 10;
 
+  //set local storage variables
+  localStorage.highestScore;
+  localStorage.bestFinishTime;
+  localStorage.clickStreak;
+  localStorage.bestMin;
+  localStorage.bestSec;
+  if(localStorage.bestFinishTime != undefined){
+    let split = localStorage.bestFinishTime.split(":");
+    localStorage.bestMin = split[0];
+    localStorage.bestSec = split[1];
+    console.log(localStorage.bestMin + ":" + localStorage.bestSec);
+  }
+
   //sounds
-  const youwin = new Audio('audio/youWinSound.wav');
-  const youlose = new Audio('audio/youLoseSound.wav');
-  const youlose2 = new Audio('audio/youLoseSound.wav');
-  const youlose3 = new Audio('audio/youLoseSound.wav');
-  const score = new Audio('audio/points.wav');
+  $rootScope.youwin = new Audio('audio/youWinSound.wav');
+  $rootScope.youlose = new Audio('audio/youLoseSound.wav');
+  $rootScope.youlose2 = new Audio('audio/youLoseSound.wav');
+  $rootScope.youlose3 = new Audio('audio/youLoseSound.wav');
+  $rootScope.scoreSound = new Audio('audio/points.wav');
   //set volume
-  youwin.volume = $rootScope.volume;
-  youlose.volume = $rootScope.volume;
-  youlose2.volume = $rootScope.volume;
-  youlose3.volume = $rootScope.volume;
-  score.volume = $rootScope.volume;
+  $rootScope.youwin.volume = $rootScope.volume;
+  $rootScope.youlose.volume = $rootScope.volume;
+  $rootScope.youlose2.volume = $rootScope.volume;
+  $rootScope.youlose3.volume = $rootScope.volume;
+  $rootScope.scoreSound.volume = $rootScope.volume;
 
   //watch for the end of the game
   $scope.watch = () => {
@@ -378,34 +399,37 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
         $(".gameCompletionPage").fadeIn();
         //determine winner
         if(myScore > yourScore){
-          if($rootScope.gamepPlaySound != 0){ youwin.play() }
+          if($rootScope.gamepPlaySound != 0){ $rootScope.youwin.play() }
+          calc.score($rootScope.timer_mins, $rootScope.timer_secs);
           $rootScope.winStatus = "You Win!";
+          //set local variables
+          calc.records();
+
           $(".winStatus").css("color", "#87E9FF");
-          $scope.points = 100;
           //start score count
           $timeout(function () {
             $scope.timeCount(1);
-            if($rootScope.gamepPlaySound != 0){ score.play() }
+            if($rootScope.gamepPlaySound != 0){ $rootScope.scoreSound.play() }
           }, 800);
         }
         else if(myScore < yourScore){
           if($rootScope.gamepPlaySound != 0){
-            youlose.play();
+            $rootScope.youlose.play();
             $timeout(function () {
-              youlose2.play();
+              $rootScope.youlose2.play();
               $timeout(function () {
-                youlose3.play();
+                $rootScope.youlose3.play();
               }, 1200);
             }, 800);
           }
           $rootScope.winStatus = "You Lose!";
           $(".winStatus").css("color", "#C12B5F");
-          $scope.points = 0;
+          $rootScope.score = 0;
         }
         else if(myScore === yourScore){
           $rootScope.winStatus = "Draw!";
           $(".winStatus").css("color", "#FFF");
-          $scope.points = 0;
+          $rootScope.score = 0;
         }
       }
 
@@ -426,17 +450,17 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
       if(total === 0){
         $interval.cancel(outOfTime);
         if($rootScope.gamepPlaySound != 0){
-          youlose.play();
+          $rootScope.youlose.play();
           $timeout(function () {
-            youlose2.play();
+            $rootScope.youlose2.play();
             $timeout(function () {
-              youlose3.play();
+              $rootScope.youlose3.play();
             }, 1200);
           }, 800);
         }
         $rootScope.winStatus = "You Lose!";
         $(".winStatus").css("color", "#C12B5F");
-        $scope.points = 0;
+        $rootScope.score = 0;
         $("#gameboard").removeClass("start");
         $(".gameCompletionPage").fadeIn();
       }
@@ -445,27 +469,33 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
   //increment the score
   $scope.timeCount = (incrementSpeed) => {
     let scoreIncrement = $interval(function () {
-      $rootScope.score = Math.floor( $rootScope.score + $scope.points/80 );
+      $rootScope.points++;
 
       //star indicator
-      if($rootScope.score > 30){ $(".starOne").addClass("starHighlight") }
-      if($rootScope.score > 65){ $(".starTwo").addClass("starHighlight") }
-      if($rootScope.score > 94){ $(".starThree").addClass("starHighlight") }
+      if($rootScope.points >= 45){ $(".starOne").addClass("starHighlight") }
+      if($rootScope.points >= 80){ $(".starTwo").addClass("starHighlight") }
+      if($rootScope.points >= 95){ $(".starThree").addClass("starHighlight") }
+      if($rootScope.points >= 120){ $(".starFour").addClass("starHighlight") }
 
-      if($rootScope.score >= $scope.points){
-        score.pause();
-        $rootScope.score = $scope.points;
+      if($rootScope.points >= $rootScope.score){
+        $rootScope.scoreSound.pause();
+        $rootScope.points = $rootScope.score;
         $interval.cancel(scoreIncrement);
       }
     }, incrementSpeed);
   }
 
   //game sounds
-  const playGame = new Audio('audio/introSound.wav');
-  const pregame = new Audio('audio/preGameMusic.wav');
+  $rootScope.playGame = new Audio('audio/introSound.wav');
+  $rootScope.pregame = new Audio('audio/preGameMusic.wav');
+  $rootScope.audio = new Audio('audio/click.wav');
+  $rootScope.playFill = new Audio('audio/fill.wav');
+
   //set volume
-  playGame.volume = $rootScope.volume;
-  pregame.volume = $rootScope.volume;
+  $rootScope.playGame.volume = $rootScope.volume;
+  $rootScope.pregame.volume = $rootScope.volume;
+  $rootScope.audio.volume = $rootScope.volume;
+  $rootScope.playFill.volume = 0.1*$rootScope.volume;
 
   var gameBoardPage = () => {
     $(".menuPage").fadeOut();
@@ -477,7 +507,7 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
     $scope.watch();
     gameBoardPage();
     $(".countDown").css("display", "flex");
-    if($rootScope.gamepPlaySound != 0){ playGame.play() }
+    if($rootScope.gamepPlaySound != 0){ $rootScope.playGame.play() }
     $(".countDownBox span").css("opacity", 1).text("3");
     $timeout(function () {
       $(".countDownBox span").text("2");
@@ -583,26 +613,51 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
   };
 
   //volume keys
+  //initiate beingging colume indicator
+  $(".lessThanAll").addClass("volumeColor");
+  $(".lessThan25").addClass("volumeColor");
   $scope.off = () => {
     $rootScope.volume = 0;
-    $rootScope.pregameMusic.volume = $rootScope.volume;
+    setVolume($rootScope.volume);
+    $(".volumeChange").removeClass("volumeColor");
+    $(".lessThanAll").addClass("volumeColor");
   };
   $scope.low = () => {
     $rootScope.volume = 0.25;
-    $rootScope.pregameMusic.volume = $rootScope.volume;
+    setVolume($rootScope.volume);
+    $(".volumeChange").removeClass("volumeColor");
+    $(".lessThan25").addClass("volumeColor");
   };
   $scope.medium = () => {
     $rootScope.volume = 0.5;
-    $rootScope.pregameMusic.volume = $rootScope.volume;
+    setVolume($rootScope.volume);
+    $(".volumeChange").removeClass("volumeColor");
+    $(".lessThan50").addClass("volumeColor");
   };
   $scope.high = () => {
     $rootScope.volume = 0.75;
-    $rootScope.pregameMusic.volume = $rootScope.volume;
+    setVolume($rootScope.volume);
+    $(".volumeChange").removeClass("volumeColor");
+    $(".lessThan75").addClass("volumeColor");
   };
   $scope.loud = () => {
     $rootScope.volume = 1;
-    $rootScope.pregameMusic.volume = $rootScope.volume;
+    setVolume($rootScope.volume);
+    $(".volumeChange").addClass("volumeColor");
   };
+
+  const setVolume = (volume) => {
+    $rootScope.pregameMusic.volume = volume;
+    $rootScope.playGame.volume = volume;
+    $rootScope.pregame.volume = volume;
+    $rootScope.audio.volume = volume;
+    $rootScope.playFill.volume = 0.1 * volume;
+    $rootScope.youwin.volume = volume;
+    $rootScope.youlose.volume = volume;
+    $rootScope.youlose2.volume = volume;
+    $rootScope.youlose3.volume = volume;
+    $rootScope.scoreSound.volume = volume;
+  }
 
 }]);
 
@@ -837,6 +892,13 @@ app.service("map", function($filter) {
 
 app.service("click", function($rootScope, $filter, map){
 
+  //update click streak
+  this.updateStreak = (num) => {
+
+    if(num > $rootScope.highestGameStreak){ $rootScope.highestGameStreak = num; console.log($rootScope.highestGameStreak); }
+
+  }
+
   //indicates where the last move was ms-radial-gradient
   this.clickCircle = (dataLocation, offsetX, offsetY) => {
 
@@ -908,13 +970,9 @@ app.service("click", function($rootScope, $filter, map){
 
     if($rootScope.gamepPlaySound != 0){
       if(notFilled){
-        const audio = new Audio('audio/click.wav');
-        audio.volume = $rootScope.volume;
-        audio.play();
+        $rootScope.audio.play();
       } else {
-        const playFill = new Audio('audio/fill.wav');
-        playFill.volume = 0.1*$rootScope.volume;
-        playFill.play();
+        $rootScope.playFill.play();
       }
     }
 
@@ -1600,6 +1658,67 @@ app.service("click", function($rootScope, $filter, map){
 
   }
 
+});
+
+app.service("calc", function ($rootScope) {
+
+  this.records = () => {
+
+    if((localStorage.clickStreak == undefined) || ($rootScope.clickStreakInGame > localStorage.clickStreak)){
+      localStorage.clickStreak = $rootScope.clickStreakInGame - 1;
+    }
+
+    if((localStorage.highestScore == undefined) || ($rootScope.score > localStorage.highestScore)){
+      localStorage.highestScore = $rootScope.score;
+    }
+
+    if(localStorage.bestFinishTime == undefined){
+      localStorage.bestFinishTime = $(".currentTime").text()
+    } else if (localStorage.bestMin < parseInt($rootScope.timer_mins)){
+      localStorage.bestFinishTime = $(".currentTime").text()
+    } else if( (localStorage.bestMin == parseInt($rootScope.timer_mins)) && (localStorage.bestSec < parseInt($rootScope.timer_secs)) ){
+      localStorage.bestFinishTime = $(".currentTime").text()
+    }
+
+  }
+
+  this.score = (mins, secs) => {
+    let min = parseInt(mins);
+    let sec = parseInt(secs);
+
+    if( (min === 2) & (sec >= 40) ){ $rootScope.score =  300 }
+    else if( (min === 2) & ( sec >= 35 ) ){ $rootScope.score =  260 }
+    else if( (min === 2) & ( sec >= 30 ) ){ $rootScope.score =  220 }
+    else if( (min === 2) & ( sec >= 25 ) ){ $rootScope.score =  190 }
+    else if( (min === 2) & ( sec >= 20 ) ){ $rootScope.score =  160 }
+    else if( (min === 2) & ( sec >= 15 ) ){ $rootScope.score =  140 }
+    else if( (min === 2) & ( sec >= 10 ) ){ $rootScope.score =  120 }
+    else if( (min === 2) & ( sec >= 5 ) ){ $rootScope.score =  110 }
+    else if( (min === 2) & ( sec >= 0 ) ){ $rootScope.score =  100 }
+
+    else if( (min === 1) & ( sec >= 55 ) ){ $rootScope.score =  95 }
+    else if( (min === 1) & ( sec >= 50 ) ){ $rootScope.score =  90 }
+    else if( (min === 1) & ( sec >= 45 ) ){ $rootScope.score =  85 }
+    else if( (min === 1) & ( sec >= 40 ) ){ $rootScope.score =  80 }
+    else if( (min === 1) & ( sec >= 35 ) ){ $rootScope.score =  75 }
+    else if( (min === 1) & ( sec >= 30 ) ){ $rootScope.score =  70 }
+    else if( (min === 1) & ( sec >= 25 ) ){ $rootScope.score =  65 }
+    else if( (min === 1) & ( sec >= 20 ) ){ $rootScope.score =  60 }
+    else if( (min === 1) & ( sec >= 15 ) ){ $rootScope.score =  55 }
+    else if( (min === 1) & ( sec >= 10 ) ){ $rootScope.score =  50 }
+    else if( (min === 1) & ( sec >= 5 ) ){ $rootScope.score =  45 }
+    else if( (min === 1) & ( sec >= 0 ) ){ $rootScope.score =  40 }
+
+    else if( (min === 0) & ( sec >= 55 ) ){ $rootScope.score =  30 }
+    else if( (min === 0) & ( sec >= 50 ) ){ $rootScope.score =  20 }
+    else if( (min === 0) & ( sec >= 45 ) ){ $rootScope.score =  10 }
+    else if( (min === 0) & ( sec >= 40 ) ){ $rootScope.score =  5 }
+    else if( (min === 0) & ( sec >= 35 ) ){ $rootScope.score =  4 }
+    else if( (min === 0) & ( sec >= 30 ) ){ $rootScope.score =  3 }
+    else if( (min === 0) & ( sec >= 25 ) ){ $rootScope.score =  2 }
+    else if( (min === 0) & ( sec >= 0 ) ){ $rootScope.score =  0 }
+
+  }
 });
 
 app.filter("reset_numbers", function ($filter) {

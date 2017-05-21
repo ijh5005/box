@@ -344,7 +344,8 @@ body {
 .settingsOptions {
 }
 
-.settingsHeading span {
+.settingsHeading span,
+.statsHeading span {
   font-size: 0.6em;
 }
 
@@ -366,6 +367,10 @@ body {
   width: 1em;
 }
 
+.volumeColor {
+  background: #405FE5;
+}
+
 .switch {
   align-items: center;
   border: solid #FFF;
@@ -383,6 +388,7 @@ body {
   height: 1em;
   left: 0em;
   position: relative;
+  text-align: center;
   transition: left 0.5s ease-out 0s;
   width: 2em;
 }
@@ -485,7 +491,8 @@ body {
 
 .starOne,
 .starTwo,
-.starThree {
+.starThree,
+.starFour {
   opacity: 0.2;
 }
 

@@ -49,7 +49,7 @@
 			<div id="timer">
 				<div class="timerLiner">
 					<span class="top_bar_text timer_top_bar_text timeConnections">
-              <span>{{timer_mins}}:{{timer_secs}}</span>
+              <span class="currentTime">{{timer_mins}}:{{timer_secs}}</span>
           </span>
 					<div class="addedTime timeConnections">
 						<span>+2</span>
@@ -124,10 +124,10 @@
 						<div class="volume settingsOptions">
 							<div class="settingsHeading"><span>{{settingsVolume}}</span></div>
 							<div class="volumeButtons">
-								<div class="volumeChange" ng-click="off()"></div>
-								<div class="volumeChange" ng-click="low()"></div>
-								<div class="volumeChange" ng-click="medium()"></div>
-								<div class="volumeChange" ng-click="high()"></div>
+								<div class="volumeChange lessThan75 lessThan50 lessThan25 lessThanAll" ng-click="off()"></div>
+								<div class="volumeChange lessThan75 lessThan50 lessThan25" ng-click="low()"></div>
+								<div class="volumeChange lessThan50 lessThan75" ng-click="medium()"></div>
+								<div class="volumeChange lessThan75" ng-click="high()"></div>
 								<div class="volumeChange" ng-click="loud()"></div>
 							</div>
 						</div>
@@ -149,10 +149,26 @@
 
 					<div class="stats" ng-click="statsTab()"> {{stats}} </div>
 					<div class="statsTab">
+
 						<div class="backToMenu" ng-click="statsToMenu()"><span ng-click="statsToMenu()">BACK</span></div>
-					</div>
-				</div>
-			</div>
+						<div class="volume settingsOptions">
+							<div class="statsHeading"><span>{{bestFinishTime}}</span></div>
+							<div class="statsHeading"><span>{{bestFinishTimeValue}}</span></div>
+						</div>
+						<hr>
+						<div class="music settingsOptions">
+							<div class="statsHeading"><span>{{highestScore}}</span></div>
+							<div class="statsHeading"><span>{{highestScoreValue}}</span></div>
+						</div>
+						<hr>
+						<div class="gameplaySounds settingsOptions">
+							<div class="statsHeading"><span>{{clickStreak}}</span></div>
+							<div class="statsHeading"><span>{{clickStreakValue}}</span></div>
+						</div>
+
+					</div> <!-- end: <div class="statsTab"> -->
+				</div> <!-- end: <div class="menuLiner"> -->
+			</div> <!-- end: <div id="middlePanel"> -->
 			<div class="edgePanel"></div>
 		</div>
 
@@ -166,11 +182,12 @@
 			<div class="edgePanel"></div>
 			<div id="middlePanel">
 				<div class="winStatus"> {{winStatus}}	</div>
-				<div class="score"> {{score}} </div>
+				<div class="score"> {{points}} </div>
 				<div class="stars">
 					<div class="starOne starGoal"><img src="img/star.png" alt=""></div>
 					<div class="starTwo starGoal"><img src="img/star.png" alt=""></div>
 					<div class="starThree starGoal"><img src="img/star.png" alt=""></div>
+					<div class="starFour starGoal"><img src="img/star.png" alt=""></div>
 				</div>
 			</div>
 			<div class="edgePanel"></div>
