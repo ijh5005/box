@@ -108,12 +108,31 @@ body {
 #you,
 #timer {
 	display: flex;
-    justify-content: center;
-    align-items: center;
+  justify-content: center;
+  align-items: center;
+}
+
+#timer {
+  justify-content: center;
+}
+
+#timer .addedTime {
+  height: 6em;
+  width: 2rem;
+}
+
+#timer .addedTime span {
+  color: #C12B5F;
+  display: none;
+  font-size: 2em;
 }
 
 .top_bar_text {
 	font-size: 4em;
+}
+
+.timer_top_bar_text {
+  width: 9rem;
 }
 
 #gameLiner {
@@ -195,7 +214,8 @@ body {
 }
 
 .quickStart,
-.directions {
+.directions,
+.directionsTab {
   align-items: center;
   border: 0.1em solid #FFF;
   border-radius: 0.2em;
@@ -219,6 +239,64 @@ body {
 
 .quickStart span {
   font-size: 0.52em;
+}
+
+.backToMenu {
+  text-align: center;
+  border-bottom: 0.1em solid;
+  border-right: 0.1em solid;
+  border-radius: 10px;
+}
+
+.directionsTab {
+  display: none;
+  flex-direction: column;
+  height: 10em;
+  justify-content: space-around;
+  overflow: scroll;
+}
+
+.directionBar {
+  align-items: center;
+  display: flex;
+  height: 3em;
+  justify-content: space-around;
+  margin: 0.1em 0;
+  width: 6em;
+}
+
+.description,
+.timeDescription {
+  align-items: center;
+  display: flex;
+  height: 2.8em;
+  justify-content: ccenter;
+  text-align: center;
+  width: 4em;
+}
+
+.timeBar {
+  height: 7em;
+  margin-top: 0.2em;
+}
+
+.description span,
+.timeDescription span {
+  font-size: 0.5em;
+}
+
+.img {
+  align-items: center;
+  display: flex;
+  height: 1.8em;
+  justify-content: center;
+  width: 1.8em;
+}
+
+.img img {
+  border-radius: 5px;
+  height: 1.8em;
+  width: 1.8em;
 }
 
 .edgePanel {
@@ -281,6 +359,10 @@ body {
 .starTwo,
 .starThree {
   opacity: 0.2;
+}
+
+.starHighlight {
+  opacity: 1;
 }
 
 .score {
@@ -357,3 +439,16 @@ body {
     border-radius: 10px;
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,1);
 }
+
+/*GAME BOARD BORDER COLOR CLASSES*/
+
+.borderTopColor { border-top-color: #C12B5F }
+.borderRightColor { border-right-color: #C12B5F }
+.borderBottomColor { border-bottom-color: #C12B5F }
+.borderLeftColor { border-left-color: #C12B5F }
+
+.borderTopColorDone { border-top-color: blue }
+.borderRightColorDone { border-right-color: blue }
+.borderBottomColorDone { border-bottom-color: blue }
+.borderLeftColorDone { border-left-color: blue }
+/*********************************/

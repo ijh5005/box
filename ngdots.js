@@ -5,13 +5,13 @@ var app = angular.module("box_game", []);
 app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$filter", "turn_update", "data",function ($scope, $rootScope, $timeout, $interval, $filter, turn_update, data) {
 
   /**********  application variables  **********/
-  $scope.my_score = "00";
-  $scope.your_score = "00";
-  $scope.headerText = "Restart";
+  $rootScope.my_score = "00";
+  $rootScope.your_score = "00";
+  $scope.headerText = "Main Menu";
   $rootScope.computerTurn = false;
   $scope.totalBoxes = 64;
-  $scope.timer_mins = "02";
-  $scope.timer_secs = "00";
+  $rootScope.timer_mins = "00";
+  $rootScope.timer_secs = "40";
   $scope.time = "2min";
   $rootScope.totalTurns = 0;
   $rootScope.disabled = false;
@@ -36,91 +36,119 @@ app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$f
   /**********  end: test button  **********/
 
 
+  // WATCH FOR ENDGAME RESTART AND TIMER GAME START
+  $interval(function () {
+    if($(".gameCompletionPage").hasClass("endGameRestart")){
+      $scope.reset();
+      $(".gameCompletionPage").removeClass("endGameRestart");
+    }
+    if($(".menuPage").hasClass("startGameClock")){
+      $("#gameboard").addClass("start");
+      $(".menuPage").removeClass("startGameClock");
+    }
+  }, 10);
+
 
   /**********  reset button  **********/
       $scope.reset = () => {
         $scope.play();
-        //reset the reset button text
-        $("#reset_text").text("Restart");
-        //reset gameboard start indication (used to start the time clock)
-        $("#gameboard").removeClass("start");
-        //reset scores
-        $scope.my_score = $filter("reset_numbers")($scope.my_score);
-        $scope.your_score = $filter("reset_numbers")($scope.your_score);
-        //reset start time
-        $rootScope.timeSelect = true;
-        //reset timer
-        $rootScope.startGame = false;
-        $scope.timer_mins = "02";
-        $scope.timer_secs = "00";
-        //reset background and borders and other classes
-        $(".grid").removeClass("myPoint")
-                  .removeClass("yourPoint")
-                  .css("border", "0.15em dashed #DDD")
-                  .removeClass("you")
-                  .removeClass("me");
-        //reset the checkers
-        $(".checker").attr("data", 0);
-        //side checks
-        $(".side").attr("data", "false");
-        //reset turn opacity and turn variable
-        $(".my_score").css("opacity", "1");
-        $(".your_score").css("opacity", "0.4");
         $rootScope.whos_turn = 0;
-        //remove all path related classes
-        $(".grid").removeClass("middlePathBox");
-        $(".grid").removeClass("pathEnd");
-        $(".grid").removeClass("pathAccounted");
+        $timeout(function () {
+          //reset last clicked box
+          $rootScope.lastBox = {};
+          //reset endgame indicator
+          $rootScope.endGame = false;
+          //reset the reset button text
+          $("#reset_text").text("Main Menu");
+          //reset gameboard start indication (used to start the time clock)
+          $("#gameboard").removeClass("start");
+          //reset scores
+          $rootScope.my_score = $filter("reset_numbers")($rootScope.my_score);
+          $rootScope.your_score = $filter("reset_numbers")($rootScope.your_score);
+          //reset start time
+          $rootScope.timeSelect = true;
+          //reset timer
+          $rootScope.startGame = false;
+          $rootScope.timer_mins = "00";
+          $rootScope.timer_secs = "40";
+          //reset background and borders and other classes
+          $(".grid").removeClass("myPoint")
+                    .removeClass("yourPoint")
+                    .removeClass("you")
+                    .removeClass("me")
+                    .removeClass("borderTopColor")
+                    .removeClass("borderRightColor")
+                    .removeClass("borderBottomColor")
+                    .removeClass("borderLeftColor")
+                    .removeClass("borderTopColorDone")
+                    .removeClass("borderRightColorDone")
+                    .removeClass("borderBottomColorDone")
+                    .removeClass("borderLeftColorDone");
+          //remove atr higlight
+          $(".starGoal").removeClass("starHighlight");
+          //reset the checkers
+          $(".checker").attr("data", 0);
+          //side checks
+          $(".side").attr("data", "false");
+          //reset turn opacity and turn variable
+          $(".my_score").css("opacity", "1");
+          $(".your_score").css("opacity", "0.4");
+          //remove all path related classes
+          $(".grid").removeClass("middlePathBox");
+          $(".grid").removeClass("pathEnd");
+          $(".grid").removeClass("pathAccounted");
+        }, 500);
     };
 
     $scope.play = () => {
-      let playGame = new Audio('audio/introSound.wav');
-      $(".countDown").css("display", "flex");
-        playGame.play();
-        $(".countDownBox span").css("opacity", 1).text("3");
-        $timeout(function () {
-          $(".countDownBox span").text("2");
-          $timeout(function () {
-            $(".countDownBox span").text("1");
-            $timeout(function () {
-              $(".countDownBox span").text("GO");
-              $timeout(function () {
-                $(".countDown").css("display", "none");
-              }, 300);
-            }, 1000);
-          }, 1000);
-        }, 1000);
+      const pregameMusic = document.getElementById("myAudio");
+      $(".menuPage").fadeIn();
+      pregameMusic.play();
     }
   /**********  complete: reset button  **********/
 
 
 
   /**********  start game when first line is pressed  **********/
+  // WATCH FOR TIMER INCREMEN
+  $interval(function () {
+    if($("#timer").hasClass("incrementTimer")){
+      $("#timer").removeClass("incrementTimer");
+      let plus = parseInt($rootScope.timer_secs) + 2;
+      plus = $filter("double_digit")(plus);
+      if(plus > 59){
+        const timeDifference = plus - 60;
+        $rootScope.timer_mins = parseInt($rootScope.timer_mins) + 1;
+        //turn them ino two digit numbers
+        $rootScope.timer_secs = $filter("double_digit")(timeDifference);
+        $rootScope.timer_mins = $filter("double_digit")($rootScope.timer_mins);
+      } else {
+        $rootScope.timer_secs = plus;
+      }
+    }
+  }, 10);
   //update timer every sec
   $interval(function () {
           if( $("#gameboard").hasClass("start") && ($rootScope.whos_turn%2 == 0) ){
               //update timer
               //convert the number for incrementing
-              $scope.timer_mins = parseInt($scope.timer_mins);
-              $scope.timer_secs = parseInt($scope.timer_secs);
+              $rootScope.timer_mins = parseInt($rootScope.timer_mins);
+              $rootScope.timer_secs = parseInt($rootScope.timer_secs);
               //increment secs by 1
-              $scope.timer_secs--;
+              $rootScope.timer_secs--;
 
-              if($scope.timer_secs == -1){
-                  $scope.timer_secs = 59;
-                  $scope.timer_mins--;
+              if($rootScope.timer_secs == -1){
+                  $rootScope.timer_secs = 59;
+                  $rootScope.timer_mins--;
               }
 
-              if(($scope.timer_secs == 0) && ($scope.timer_mins == 0)){
+              if(($rootScope.timer_secs == 0) && ($rootScope.timer_mins == 0)){
                   $("#gameboard").removeClass("start");
               }
 
-              if(($scope.timer_secs == 0) && ($scope.timer_mins == 0) && ($scope.totalScore != 64)){
-                  //$scope.headerText = "You Lose!";
-              }
               //turn them ino two digit numbers
-              $scope.timer_secs = $filter("double_digit")($scope.timer_secs);
-              $scope.timer_mins = $filter("double_digit")($scope.timer_mins);
+              $rootScope.timer_secs = $filter("double_digit")($rootScope.timer_secs);
+              $rootScope.timer_mins = $filter("double_digit")($rootScope.timer_mins);
           }
       }, 1000);
   /**********  complete: start game when first dot is pressed  **********/
@@ -140,9 +168,9 @@ app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$f
   $rootScope.$watch("totalTurns", (newValue, oldValue) => {
      if(newValue != oldValue){
          //get the number of highlighted boxes for each players (indicated by number of "me" and "you" classes)
-         $scope.my_score = data.updateScore("myScore");
-         $scope.your_score = data.updateScore("computerScore");
-         $scope.totalScore = $scope.my_score + $scope.your_score;
+         $rootScope.my_score = data.updateScore("myScore");
+         $rootScope.your_score = data.updateScore("computerScore");
+         $rootScope.totalScore = $rootScope.my_score + $rootScope.your_score;
      }
   });
   /**********  complete: game flow  **********/
@@ -167,8 +195,13 @@ app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$f
 app.controller("line_click", ["$scope", "$rootScope", "$filter", "$timeout", "data", "map", "click",
                               function ($scope, $rootScope, $filter, $timeout, data, map, click){
 
-  $scope.audio = "audio";
+  $rootScope.lastBox = {};
+
   $scope.edge_click = ($event) => {
+      //take of the click higlight
+      if($rootScope.lastBox.madeThisSide){ $(".grid[data=" + $rootScope.lastBox.location + "]").addClass($rootScope.lastBox.class) }
+      if($rootScope.lastBox.madeAdjSide){ $(".grid[data=" + $rootScope.lastBox.adjLocation + "]").addClass($rootScope.lastBox.adjClass) }
+      $rootScope.lastBox = {};
 
       //track total amount of turns => when this value changes we know to update the score (functionality used in box_ctrl)
       $rootScope.totalTurns++;
@@ -182,6 +215,12 @@ app.controller("line_click", ["$scope", "$rootScope", "$filter", "$timeout", "da
       let thisBox = map.boxes($event);
       const validLineClick = ( thisBox != false );
       //console.log(thisBox);
+
+      if($rootScope.whos_turn%2 === 0 && validLineClick && !thisBox.hasBeenClicked){
+        $("#timer").addClass("incrementTimer");
+        $("#timer .addedTime span").show();
+        $("#timer .addedTime span").fadeOut(300);
+      }
 
 
       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////there is a bug at 162
@@ -205,6 +244,7 @@ app.controller("line_click", ["$scope", "$rootScope", "$filter", "$timeout", "da
       const isComputerTurn = (($rootScope.whos_turn%2 != 0) && ($rootScope.disabled == false));
       //cache the computer's move response time to use in the timeout
       const computerResponseTime = 400;
+
       //delay computer turn
       $timeout( function () {
 
@@ -227,23 +267,29 @@ app.controller("line_click", ["$scope", "$rootScope", "$filter", "$timeout", "da
 
               } else if( $rootScope.endGame ){
 
-                const obj = click.endGame();
-                //initiate computer move
-                $scope.edge_click(obj);
+                //if the game is over don't run this box click
+                if($scope.totalScore != 64){
+                  const obj = click.endGame();
+                  //initiate computer move
+                  $scope.edge_click(obj);
+                }
 
               } else if((noLine != undefined) || (oneLine != undefined)){
-
+                ////////////////////////////////////////add the difficulty adjustment here
                 //get click obj
                 let obj = click.noLineClick();
 
                 if(obj === false){
 
-                  //declare end end to skip over non-endgame logic
-                  $rootScope.endGame = true;
+                  //if the game is over don't run this box click
+                  if($scope.totalScore != 64){
+                    //declare end end to skip over non-endgame logic
+                    $rootScope.endGame = true;
 
-                  const obj = click.endGame();
-                  //initiate computer move
-                  $scope.edge_click(obj);
+                    const obj = click.endGame();
+                    //initiate computer move
+                    $scope.edge_click(obj);
+                  }
 
                 } else {
                   //initiate computer move
@@ -260,14 +306,14 @@ app.controller("line_click", ["$scope", "$rootScope", "$filter", "$timeout", "da
 
 }]);
 
-app.controller("outOfGamePlayFunction", ["$scope", "$interval", "$timeout", function($scope, $interval, $timeout) {
+app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$timeout", function($scope, $rootScope, $interval, $timeout) {
 
-  $scope.winStatus = "You Win!";
+  $rootScope.winStatus = "";
   $scope.menu = "Main Menu"
   $scope.quickStart = "quick start";
   $scope.directions = "directions";
-  $scope.score = 0;
-  $scope.points = 1000;
+  $rootScope.score = 0;
+  $scope.points = 100;
   $scope.starOne = true;
   $scope.starTwo = true;
   $scope.starThree = true;
@@ -279,6 +325,8 @@ app.controller("outOfGamePlayFunction", ["$scope", "$interval", "$timeout", func
   //sounds
   const youwin = new Audio('audio/youWinSound.wav');
   const youlose = new Audio('audio/youLoseSound.wav');
+  const youlose2 = new Audio('audio/youLoseSound.wav');
+  const youlose3 = new Audio('audio/youLoseSound.wav');
   const score = new Audio('audio/points.wav');
 
   //watch for the end of the game
@@ -291,54 +339,88 @@ app.controller("outOfGamePlayFunction", ["$scope", "$interval", "$timeout", func
       let totalScore = myScore + yourScore;
 
       if(totalScore === 64){
+        //stop the clock
+        $("#gameboard").removeClass("start");
         $scope.endGameWatch = false;
         $(".gameCompletionPage").fadeIn();
         //determine winner
         if(myScore > yourScore){
           youwin.play();
-          $scope.winStatus = "You Win!";
+          $rootScope.winStatus = "You Win!";
           $(".winStatus").css("color", "#87E9FF");
-          $scope.points = 1000;
+          $scope.points = 100;
           //start score count
           $timeout(function () {
-            $scope.timeCount();
+            $scope.timeCount(1);
+            score.play();
           }, 800);
         }
         else if(myScore < yourScore){
           youlose.play();
-          $scope.winStatus = "You Lose!";
+          $timeout(function () {
+            youlose2.play();
+            $timeout(function () {
+              youlose3.play();
+            }, 1200);
+          }, 1200);
+          $rootScope.winStatus = "You Lose!";
           $(".winStatus").css("color", "#C12B5F");
           $scope.points = 0;
-          $scope.timeCountTest(10);
         }
-        else if(myScore === yourScore){ console.log("draw") }
+        else if(myScore === yourScore){
+          $rootScope.winStatus = "Draw!";
+          $(".winStatus").css("color", "#FFF");
+          $scope.points = 0;
+        }
       }
 
       //stop the interval count
       if($scope.endGameWatch === false){
+          //reset th watch
+          $scope.endGameWatch = true;
           $interval.cancel(endGame);
+          //stop the clock
+          $("#gameboard").removeClass("start");
       }
-    }, 2000);
+    }, 1000);
+
+    let outOfTime = $interval(function () {
+      let minLeft = parseInt($rootScope.timer_mins);
+      let secLeft = parseInt($rootScope.timer_secs);
+      let total = minLeft + secLeft;
+      if(total === 0){
+        $interval.cancel(outOfTime);
+        youlose.play();
+        $timeout(function () {
+          youlose2.play();
+          $timeout(function () {
+            youlose3.play();
+          }, 1200);
+        }, 1200);
+        $rootScope.winStatus = "You Lose!";
+        $(".winStatus").css("color", "#C12B5F");
+        $scope.points = 0;
+        $("#gameboard").removeClass("start");
+        $(".gameCompletionPage").fadeIn();
+      }
+    }, 10);
   }
   //increment the score
   $scope.timeCount = (incrementSpeed) => {
-    score.play();
     let scoreIncrement = $interval(function () {
-      $scope.score = Math.floor( $scope.score + $scope.points/80 );
+      $rootScope.score = Math.floor( $rootScope.score + $scope.points/80 );
 
       //star indicator
-      if($scope.score > 300){ $(".starOne").css("opacity", 1) }
-      if($scope.score > 650){ $(".starTwo").css("opacity", 1) }
-      if($scope.score > 950){ $(".starThree").css("opacity", 1) }
+      if($rootScope.score > 30){ $(".starOne").addClass("starHighlight") }
+      if($rootScope.score > 65){ $(".starTwo").addClass("starHighlight") }
+      if($rootScope.score > 94){ $(".starThree").addClass("starHighlight") }
 
-      if($scope.score >= $scope.points){
-        $scope.score = $scope.points;
+      if($rootScope.score >= $scope.points){
+        $rootScope.score = $scope.points;
         $interval.cancel(scoreIncrement);
       }
     }, incrementSpeed);
   }
-
-  $scope.watch();
 
   //game sounds
   const playGame = new Audio('audio/introSound.wav');
@@ -352,6 +434,7 @@ app.controller("outOfGamePlayFunction", ["$scope", "$interval", "$timeout", func
 
   //initiate the game
   $scope.play = () => {
+    $scope.watch();
     gameBoardPage();
     $(".countDown").css("display", "flex");
     playGame.play();
@@ -365,6 +448,7 @@ app.controller("outOfGamePlayFunction", ["$scope", "$interval", "$timeout", func
           $timeout(function () {
             $(".countDown").css("display", "none");
             $(".countDownBox span").text("3");
+            $(".menuPage").addClass("startGameClock");
           }, 300);
         }, 1000);
       }, 1000);
@@ -373,7 +457,26 @@ app.controller("outOfGamePlayFunction", ["$scope", "$interval", "$timeout", func
   //back main menuPage
   $scope.mainMenu = () => {
     $(".gameCompletionPage").fadeOut();
-    $timeout( () => { $(".menuPage").fadeIn() }, 800);
+    $timeout( () => {
+      const pregameMusic = document.getElementById("myAudio");
+      pregameMusic.play();
+      $(".gameCompletionPage").addClass("endGameRestart");
+      $(".menuPage").fadeIn();
+    }, 1200);
+  }
+  //to directions
+  $scope.directionsTab = () => {
+    $(".quickStart").fadeOut();
+    $(".directions").fadeOut();
+    $timeout(function () { $(".directionsTab").fadeIn() }, 1000);
+  }
+  //back to menu from directions
+  $scope.directionsToMenu = () => {
+    $(".directionsTab").fadeOut();
+    $timeout(function () {
+      $(".quickStart").fadeIn();
+      $(".directions").fadeIn();
+    }, 1000);
   }
 
 }]);
@@ -393,20 +496,6 @@ app.service("data", function ($filter) {
             this.computerScore = $(".grid[class*=your]").length;
             this.computerScore = $filter("double_digit")(this.computerScore);
             return this.computerScore;
-        }
-
-        if(32 > myScore){
-            $("#reset_text").text("You Lose!");
-            //stop the game clock
-            $("#gameboard").removeClass("start");
-        } else if(32 < myScore) {
-            $("#reset_text").text("You Win!");
-            //stop the game clock
-            $("#gameboard").removeClass("start");
-        } else if( (myScore + computerScore) == 64 ){
-            $("#reset_text").text("Draw!");
-            //stop the game clock
-            $("#gameboard").removeClass("start");
         }
     };
 
@@ -440,21 +529,21 @@ app.service("map", function($filter) {
 
     const data = dataLocation;
     //top right corner box
-    const topRight = ( data == 7 );
+    const topRight = ( data === 7 );
     //top left corner box
-    const topLeft = ( data == 0 );
+    const topLeft = ( data === 0 );
     //bottom right corner box
-    const bottomRight = ( data == 63 );
+    const bottomRight = ( data === 63 );
     //bottome left corner
-    const bottomeLeft = ( data == 56 );
+    const bottomeLeft = ( data === 56 );
     //top side boxes
     const topSide = ( data === 1 || data === 2 || data === 3 || data === 4 || data === 5 || data === 6 );
     //bottom side boxes
-    const bottomSide = ( data == 57 || data == 58 || data == 59 || data == 60 || data == 61 || data == 62 );
+    const bottomSide = ( data === 57 || data === 58 || data === 59 || data === 60 || data === 61 || data === 62 );
     //right side boxes
-    const rightSide = ( data == 15 || data == 23 || data == 31 || data == 39 || data == 47 || data == 55 );
+    const rightSide = ( data === 15 || data === 23 || data === 31 || data === 39 || data === 47 || data === 55 );
     //left side boxes
-    const leftSide = ( data == 8 || data == 16 || data == 24 || data == 32 || data == 40 || data == 48 );
+    const leftSide = ( data === 8 || data === 16 || data === 24 || data === 32 || data === 40 || data === 48 );
 
     if( topRight ) { return "topRight" }
     else if( topLeft ) { return "topLeft" }
@@ -669,9 +758,6 @@ app.service("click", function($rootScope, $filter, map){
     const isAdjBoxFillable = ( $(".grid[data=" + thisBox.adjBox + "]").children(".checker").attr("data") == 4 );
 
     if($rootScope.whos_turn%2 == 0){
-      //audio
-      const playGame = new Audio('audio/fill.wav');
-      playGame.play();
 
       //the gridboxes w/ the class yourPoint get filled w/ the opponent color
       if( isThisBoxFillable ){ $(".grid[data=" + thisBox.thisBoxLocation + "]").addClass("yourPoint"); notFilled = false; }
@@ -683,9 +769,6 @@ app.service("click", function($rootScope, $filter, map){
       }
 
     } else {
-      //audio
-      const playGame = new Audio('audio/fill.wav');
-      playGame.play();
 
       //the gridboxes w/ the class myPoint get filled w/ your color
       if( isThisBoxFillable ){ $(".grid[data=" + thisBox.thisBoxLocation + "]").addClass("myPoint"); notFilled = false; }
@@ -699,8 +782,12 @@ app.service("click", function($rootScope, $filter, map){
     }
 
     if(notFilled){
-      var audio = new Audio('audio/click.wav');
+      const audio = new Audio('audio/click.wav');
       audio.play();
+    } else {
+      const playFill = new Audio('audio/fill.wav');
+      playFill.volume = 0.1;
+      playFill.play();
     }
 
   };
@@ -710,17 +797,31 @@ app.service("click", function($rootScope, $filter, map){
   this.line = (thisBox) => {
 
     //perform line click on this box
-    if( thisBox.thisBoxSideClick === "top" ){ $(".grid[data=" + thisBox.thisBoxLocation + "]").css("borderTopColor", "blue") }
-    else if( thisBox.thisBoxSideClick === "right" ){ $(".grid[data=" + thisBox.thisBoxLocation + "]").css("borderRightColor", "blue") }
-    else if( thisBox.thisBoxSideClick === "bottom" ){ $(".grid[data=" + thisBox.thisBoxLocation + "]").css("borderBottomColor", "blue") }
-    else if( thisBox.thisBoxSideClick === "left" ){ $(".grid[data=" + thisBox.thisBoxLocation + "]").css("borderLeftColor", "blue") }
+    if( thisBox.thisBoxSideClick === "top" ){ $(".grid[data=" + thisBox.thisBoxLocation + "]").addClass("borderTopColor") }
+    else if( thisBox.thisBoxSideClick === "right" ){ $(".grid[data=" + thisBox.thisBoxLocation + "]").addClass("borderRightColor") }
+    else if( thisBox.thisBoxSideClick === "bottom" ){ $(".grid[data=" + thisBox.thisBoxLocation + "]").addClass("borderBottomColor") }
+    else if( thisBox.thisBoxSideClick === "left" ){ $(".grid[data=" + thisBox.thisBoxLocation + "]").addClass("borderLeftColor") }
 
     if( thisBox.hasAdjBox ){
-      if( thisBox.thisBoxSideClick === "top" ){ $(".grid[data=" + thisBox.adjBox + "]").css("borderBottomColor", "blue") }
-      else if( thisBox.thisBoxSideClick === "right" ){ $(".grid[data=" + thisBox.adjBox + "]").css("borderLeftColor", "blue") }
-      else if( thisBox.thisBoxSideClick === "bottom" ){ $(".grid[data=" + thisBox.adjBox + "]").css("borderTopColor", "blue") }
-      else if( thisBox.thisBoxSideClick === "left" ){ $(".grid[data=" + thisBox.adjBox + "]").css("borderRightColor", "blue") }
+      if( thisBox.thisBoxSideClick === "top" ){ $(".grid[data=" + thisBox.adjBox + "]").addClass("borderBottomColor") }
+      else if( thisBox.thisBoxSideClick === "right" ){ $(".grid[data=" + thisBox.adjBox + "]").addClass("borderLeftColor") }
+      else if( thisBox.thisBoxSideClick === "bottom" ){ $(".grid[data=" + thisBox.adjBox + "]").addClass("borderTopColor") }
+      else if( thisBox.thisBoxSideClick === "left" ){ $(".grid[data=" + thisBox.adjBox + "]").addClass("borderRightColor") }
     }
+
+    //////save the click box as a last box higlight helper
+    if( thisBox.thisBoxSideClick === "top" ){ $rootScope.lastBox = { location: thisBox.thisBoxLocation, class: "borderTopColorDone", madeThisSide: true } }
+    else if( thisBox.thisBoxSideClick === "right" ){ $rootScope.lastBox = { location: thisBox.thisBoxLocation, class: "borderRightColorDone", madeThisSide: true } }
+    else if( thisBox.thisBoxSideClick === "bottom" ){ $rootScope.lastBox = { location: thisBox.thisBoxLocation, class: "borderBottomColorDone", madeThisSide: true } }
+    else if( thisBox.thisBoxSideClick === "left" ){ $rootScope.lastBox = { location: thisBox.thisBoxLocation, class: "borderLeftColorDone", madeThisSide: true } }
+
+    if( thisBox.hasAdjBox ){
+      if( thisBox.thisBoxSideClick === "top" ){ $rootScope.lastBox.adjLocation = thisBox.adjBox; $rootScope.lastBox.adjClass = "borderBottomColorDone"; $rootScope.lastBox.madeAdjSide = true; }
+      else if( thisBox.thisBoxSideClick === "right" ){ $rootScope.lastBox.adjLocation = thisBox.adjBox; $rootScope.lastBox.adjClass = "borderLeftColorDone"; $rootScope.lastBox.madeAdjSide = true; }
+      else if( thisBox.thisBoxSideClick === "bottom" ){ $rootScope.lastBox.adjLocation = thisBox.adjBox; $rootScope.lastBox.adjClass = "borderTopColorDone"; $rootScope.lastBox.madeAdjSide = true; }
+      else if( thisBox.thisBoxSideClick === "left" ){ $rootScope.lastBox.adjLocation = thisBox.adjBox; $rootScope.lastBox.adjClass = "borderRightColorDone"; $rootScope.lastBox.madeAdjSide = true; }
+    }
+    /////////////////////////////////////////////////////////
 
 	};
 
@@ -791,6 +892,39 @@ app.service("click", function($rootScope, $filter, map){
     else if( position === "topSide" ){ return "top" }
     else if( position === "bottomSide" ){ return "bottom" }
 
+  }
+  this.findOppositeEdgeOnCorner = (dataLocation) => {
+
+    let sideToClick;
+
+    let topLeftCorner = (dataLocation === 0);
+    let topRightCorner = (dataLocation === 7);
+    let bottomeLeftCorner = (dataLocation === 56);
+    let bottomRightCorner = (dataLocation === 63);
+
+    if(topLeftCorner){
+      let isLeftOpen = ($(".grid[data=" + dataLocation + "]").children("#left").attr("data") === "false");
+      let isTopOpen = ($(".grid[data=" + dataLocation + "]").children("#top").attr("data") === "false");
+      if(isLeftOpen){ sideToClick = "left" };
+      if(isTopOpen){ sideToClick = "top" };
+    } else if(topRightCorner){
+      let isRightOpen = ($(".grid[data=" + dataLocation + "]").children("#right").attr("data") === "false");
+      let isTopOpen = ($(".grid[data=" + dataLocation + "]").children("#top").attr("data") === "false");
+      if(isRightOpen){ sideToClick = "right" };
+      if(isTopOpen){ sideToClick = "top" };
+    } else if(bottomeLeftCorner){
+      let isLeftOpen = ($(".grid[data=" + dataLocation + "]").children("#left").attr("data") === "false");
+      let isBottomOpen = ($(".grid[data=" + dataLocation + "]").children("#bottom").attr("data") === "false");
+      if(isLeftOpen){ sideToClick = "left" };
+      if(isBottomOpen){ sideToClick = "bottom" };
+    } else if(bottomRightCorner){
+      let isRightOpen = ($(".grid[data=" + dataLocation + "]").children("#right").attr("data") === "false");
+      let isBottomOpen = ($(".grid[data=" + dataLocation + "]").children("#bottom").attr("data") === "false");
+      if(isRightOpen){ sideToClick = "right" };
+      if(isBottomOpen){ sideToClick = "bottom" };
+    }
+
+    return sideToClick;
   }
 
   //return an object with all open lines and locations
@@ -890,7 +1024,7 @@ app.service("click", function($rootScope, $filter, map){
     else if( position === "topSide" ){ sideToCheck = "top" }
     else if( position === "bottomSide" ){ sideToCheck = "bottom" }
 
-    let isEdgeNotClicked = ( $(".grid[data=" + dataLocation + "]").children("." + sideToCheck).attr("data") === "false" );
+    let isEdgeNotClicked = ( $(".grid[data=" + dataLocation + "]").children("#" + sideToCheck).attr("data") === "false" );
 
     return isEdgeNotClicked;
 
@@ -919,11 +1053,15 @@ app.service("click", function($rootScope, $filter, map){
         let surroundingBoxes = map.surroundingBoxes(position, startLocation);
         let l = surroundingBoxes.length;
 
+        //help to start checking at a random box
+        let checkAt = $filter("randomNumBetween")(0, l);
+        let randomLineCount = 0;
+
         //go through the surrounding boxes to find one with 0 or 1 line clicked
-        for( let i = 0; i < l; i++){
-          var surBoxHasNoLine = this.hasNoLine(surroundingBoxes[i]);
-          var surBoxHasOneLine = this.hasOneLine(surroundingBoxes[i]);
-          var box = this.isConnected(startLocation, surroundingBoxes[i]);
+        while(randomLineCount < l){
+          var surBoxHasNoLine = this.hasNoLine(surroundingBoxes[checkAt]);
+          var surBoxHasOneLine = this.hasOneLine(surroundingBoxes[checkAt]);
+          var box = this.isConnected(startLocation, surroundingBoxes[checkAt]);
 
           if( (surBoxHasNoLine || surBoxHasOneLine) && !box.isConnected){
 
@@ -943,7 +1081,11 @@ app.service("click", function($rootScope, $filter, map){
             return obj;
 
           }// end: if( (surBoxHasNoLine || surBoxHasOneLine) && !box.isConnected){
-        } //end: for( let i = 0; i < l; i++){
+
+          checkAt++;
+          if(checkAt == l){ checkAt = 0 }
+          randomLineCount++;
+        }
 
       } // end: if(hasNoLine || hasOneLine){
 
@@ -964,14 +1106,25 @@ app.service("click", function($rootScope, $filter, map){
 
       //check to see if the edge box has one line
       let edgehasOneLine = this.hasOneLine(boxLocationsOnTheEndge[j]);
+      //check to see if the edge has no lines
+      let edgehasNoLines = this.hasNoLine(boxLocationsOnTheEndge[j]);
       //check to see if the edge line is clicked
       let position = map.position(boxLocationsOnTheEndge[j]);
-      let edgeNotClicked = this.edgeNotClicked(boxLocationsOnTheEndge[j], position);
+      let edgeNotClicked = this.edgeNotClicked(boxLocationsOnTheEndge[j], position); ////fix edge not click to reflect corners too
 
-      if(edgehasOneLine && edgeNotClicked){
+      if((edgehasOneLine && edgeNotClicked) || (edgehasNoLines && edgeNotClicked)){
 
-        //find the opposite side check -> this should always be a safe box to pressed
-        let edgeSide = this.findOppositeEdge(position);
+        //init side to click
+        let edgeSide;
+        //check to see if side is on a corner
+        let locationOnCorner = (boxLocationsOnTheEndge[j] === 0|| boxLocationsOnTheEndge[j] === 7 || boxLocationsOnTheEndge[j] === 56 ||boxLocationsOnTheEndge[j] === 63);
+        if(locationOnCorner){
+          //find the opposite side check -> this should always be a safe box to pressed
+          edgeSide = this.findOppositeEdgeOnCorner(boxLocationsOnTheEndge[j]);
+        } else {
+          //find the opposite side check -> this should always be a safe box to pressed
+          edgeSide = this.findOppositeEdge(position);
+        }
 
         //create obj to be passed in as a computer move
         let obj = { offsetX: "", offsetY: "", target: { attributes: { data: { nodeValue: "" } } } };
@@ -1390,7 +1543,10 @@ app.filter("double_digit", function () {
 	return function (x) {
 		if( parseInt(x) < 10 ){
 			x = "0" + x;
-		}
+		} else if (x.length > 2){
+      var l = x.length;
+      var x = x.slice(l-2, l);
+    }
 		return x;
 	};
 });

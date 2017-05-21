@@ -33,9 +33,12 @@
 				<div id="you"><span class="your_score top_bar_text opacity">{{your_score}}</span></div>
 			</div>
 			<div id="timer">
-          <span class="top_bar_text">
+          <span class="top_bar_text timer_top_bar_text">
               <span>{{timer_mins}}:{{timer_secs}}</span>
           </span>
+					<div class="addedTime">
+						<span>+2</span>
+					</div>
       </div>
 		</div>
 
@@ -57,8 +60,45 @@
 		<div class="menuPage" ng-controller="outOfGamePlayFunction">
 			<div class="edgePanel"></div>
 			<div id="middlePanel">
-				<div class="quickStart" ng-click="play()"> {{quickStart}} <span>2 minute game</span></div>
-				<div class="directions"> {{directions}} </div>
+				<div class="quickStart" ng-click="play()"> {{quickStart}} <span>40 sec game</span></div>
+				<div class="directions" ng-click="directionsTab()"> {{directions}} </div>
+				<div class="directionsTab">
+					<div class="backToMenu" ng-click="directionsToMenu()"><span ng-click="directionsToMenu()">BACK</span></div>
+					<div class="directionBar">
+						<div class="description">
+							<span>click a box side to add 2 seconds to the clock</span>
+						</div>
+						<div class="img">
+							<img src="img/oneClick.png" alt="">
+						</div>
+					</div>
+					<div class="directionBar">
+						<div class="img">
+							<img src="img/fill.png" alt="">
+						</div>
+						<div class="description">
+							<span>Connect 4 box sides to score a point and take another turn</span>
+						</div>
+					</div>
+					<div class="directionBar">
+						<div class="description">
+							<span>if the time runs out you lose..<br>
+							Make the most boxes to Win!</span>
+						</div>
+						<div class="img">
+							<img src="img/time.png" alt="">
+						</div>
+					</div>
+					<div class="directionBar timeBar">
+						<div class="timeDescription">
+							<span>
+								finish with more than 2:00 to earn 3 stars<br><br>
+								finish with more than 1:45 to earn 2 stars<br><br>
+								finish with more than 1:20 to earn 1 stars<br><br>
+							</span>
+						</div>
+					</div>
+				</div>
 			</div>
 			<div class="edgePanel"></div>
 		</div>
@@ -75,9 +115,9 @@
 				<div class="winStatus"> {{winStatus}}	</div>
 				<div class="score"> {{score}} </div>
 				<div class="stars">
-					<div class="starOne"><img src="star.png" alt=""></div>
-					<div class="starTwo"><img src="star.png" alt=""></div>
-					<div class="starThree"><img src="star.png" alt=""></div>
+					<div class="starOne starGoal"><img src="img/star.png" alt=""></div>
+					<div class="starTwo starGoal"><img src="img/star.png" alt=""></div>
+					<div class="starThree starGoal"><img src="img/star.png" alt=""></div>
 				</div>
 			</div>
 			<div class="edgePanel"></div>
