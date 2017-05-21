@@ -5,6 +5,7 @@ var app = angular.module("box_game", []);
 app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$filter", "turn_update", "data",function ($scope, $rootScope, $timeout, $interval, $filter, turn_update, data) {
 
   /**********  application variables  **********/
+  $scope.developer = "Developed By: Isaiah Harrison";
   $rootScope.my_score = "00";
   $rootScope.your_score = "00";
   $scope.headerText = "Main Menu";
@@ -18,6 +19,8 @@ app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$f
   $rootScope.gridLength = 64;
   $rootScope.pathFinder;
   $rootScope.endGame = false;
+  $rootScope.volume = 0.1;
+  $rootScope.music = 1;
   //used to ngRepeat through the grid squares
   $scope.grid = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
                  26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
@@ -25,6 +28,28 @@ app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$f
   //used to indicate whos turn it is (even#: myturn, odd#: yourturn)
   $rootScope.whos_turn = 0;
   /**********  complete: application variables  **********/
+
+
+
+  //SPLASH SCREEN
+  $rootScope.pregameMusic = document.getElementById("myAudio");
+  $rootScope.pregameMusic.volume = $rootScope.volume;
+  $rootScope.pregameMusic.pause();
+  $timeout(function () {
+    $(".imgHolder img").css("transform", "perspective( 600px ) rotateY(0deg)");
+    $timeout(function () {
+      $(".splashContainer").css("backgroundColor", "#000");
+      $timeout(function () {
+        if($rootScope.music != 0){ $rootScope.pregameMusic.play(); }
+
+        $(".splashContainer").hide();
+        $("#reset").fadeIn(2000);
+        $("#top_bar").fadeIn(2000);
+        $("#gameLiner").fadeIn(2000);
+        $(".menuPage").fadeIn(2000);
+      }, 1400);
+    }, 1200);
+  }, 10);
 
 
 
@@ -101,9 +126,8 @@ app.controller("box_ctrl", ["$scope", "$rootScope", "$timeout", "$interval", "$f
     };
 
     $scope.play = () => {
-      const pregameMusic = document.getElementById("myAudio");
       $(".menuPage").fadeIn();
-      pregameMusic.play();
+      if($rootScope.music != 0){ $rootScope.pregameMusic.play(); }
     }
   /**********  complete: reset button  **********/
 
@@ -214,16 +238,12 @@ app.controller("line_click", ["$scope", "$rootScope", "$filter", "$timeout", "da
 
       let thisBox = map.boxes($event);
       const validLineClick = ( thisBox != false );
-      //console.log(thisBox);
 
       if($rootScope.whos_turn%2 === 0 && validLineClick && !thisBox.hasBeenClicked){
         $("#timer").addClass("incrementTimer");
         $("#timer .addedTime span").show();
         $("#timer .addedTime span").fadeOut(300);
       }
-
-
-      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////there is a bug at 162
 
       //if side check == false that side has not been previously clicked
       if( !thisBox.hasBeenClicked && validLineClick){
@@ -312,6 +332,13 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
   $scope.menu = "Main Menu"
   $scope.quickStart = "quick start";
   $scope.directions = "directions";
+  $scope.settings = "settings";
+  $scope.stats = "stats";
+  $scope.settingsVolume = "volume";
+  $scope.music = "music";
+  $scope.gameplaySounds = "gameplay sounds";
+  $scope.switch1 = "on";
+  $scope.switch2 = "on";
   $rootScope.score = 0;
   $scope.points = 100;
   $scope.starOne = true;
@@ -328,6 +355,12 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
   const youlose2 = new Audio('audio/youLoseSound.wav');
   const youlose3 = new Audio('audio/youLoseSound.wav');
   const score = new Audio('audio/points.wav');
+  //set volume
+  youwin.volume = $rootScope.volume;
+  youlose.volume = $rootScope.volume;
+  youlose2.volume = $rootScope.volume;
+  youlose3.volume = $rootScope.volume;
+  score.volume = $rootScope.volume;
 
   //watch for the end of the game
   $scope.watch = () => {
@@ -345,24 +378,26 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
         $(".gameCompletionPage").fadeIn();
         //determine winner
         if(myScore > yourScore){
-          youwin.play();
+          if($rootScope.gamepPlaySound != 0){ youwin.play() }
           $rootScope.winStatus = "You Win!";
           $(".winStatus").css("color", "#87E9FF");
           $scope.points = 100;
           //start score count
           $timeout(function () {
             $scope.timeCount(1);
-            score.play();
+            if($rootScope.gamepPlaySound != 0){ score.play() }
           }, 800);
         }
         else if(myScore < yourScore){
-          youlose.play();
-          $timeout(function () {
-            youlose2.play();
+          if($rootScope.gamepPlaySound != 0){
+            youlose.play();
             $timeout(function () {
-              youlose3.play();
-            }, 1200);
-          }, 1200);
+              youlose2.play();
+              $timeout(function () {
+                youlose3.play();
+              }, 1200);
+            }, 800);
+          }
           $rootScope.winStatus = "You Lose!";
           $(".winStatus").css("color", "#C12B5F");
           $scope.points = 0;
@@ -390,13 +425,15 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
       let total = minLeft + secLeft;
       if(total === 0){
         $interval.cancel(outOfTime);
-        youlose.play();
-        $timeout(function () {
-          youlose2.play();
+        if($rootScope.gamepPlaySound != 0){
+          youlose.play();
           $timeout(function () {
-            youlose3.play();
-          }, 1200);
-        }, 1200);
+            youlose2.play();
+            $timeout(function () {
+              youlose3.play();
+            }, 1200);
+          }, 800);
+        }
         $rootScope.winStatus = "You Lose!";
         $(".winStatus").css("color", "#C12B5F");
         $scope.points = 0;
@@ -416,6 +453,7 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
       if($rootScope.score > 94){ $(".starThree").addClass("starHighlight") }
 
       if($rootScope.score >= $scope.points){
+        score.pause();
         $rootScope.score = $scope.points;
         $interval.cancel(scoreIncrement);
       }
@@ -425,11 +463,13 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
   //game sounds
   const playGame = new Audio('audio/introSound.wav');
   const pregame = new Audio('audio/preGameMusic.wav');
+  //set volume
+  playGame.volume = $rootScope.volume;
+  pregame.volume = $rootScope.volume;
 
-  var pregameMusic = document.getElementById("myAudio");
   var gameBoardPage = () => {
     $(".menuPage").fadeOut();
-    pregameMusic.pause();
+    $rootScope.pregameMusic.pause();
   }
 
   //initiate the game
@@ -437,7 +477,7 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
     $scope.watch();
     gameBoardPage();
     $(".countDown").css("display", "flex");
-    playGame.play();
+    if($rootScope.gamepPlaySound != 0){ playGame.play() }
     $(".countDownBox span").css("opacity", 1).text("3");
     $timeout(function () {
       $(".countDownBox span").text("2");
@@ -458,8 +498,7 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
   $scope.mainMenu = () => {
     $(".gameCompletionPage").fadeOut();
     $timeout( () => {
-      const pregameMusic = document.getElementById("myAudio");
-      pregameMusic.play();
+      if($rootScope.music != 0){ $rootScope.pregameMusic.play(); }
       $(".gameCompletionPage").addClass("endGameRestart");
       $(".menuPage").fadeIn();
     }, 1200);
@@ -468,6 +507,8 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
   $scope.directionsTab = () => {
     $(".quickStart").fadeOut();
     $(".directions").fadeOut();
+    $(".settings").fadeOut();
+    $(".stats").fadeOut();
     $timeout(function () { $(".directionsTab").fadeIn() }, 1000);
   }
   //back to menu from directions
@@ -476,8 +517,92 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
     $timeout(function () {
       $(".quickStart").fadeIn();
       $(".directions").fadeIn();
+      $(".settings").fadeIn();
+      $(".stats").fadeIn();
     }, 1000);
   }
+  //to settings
+  $scope.settingsTab = () => {
+    $(".quickStart").fadeOut();
+    $(".directions").fadeOut();
+    $(".settings").fadeOut();
+    $(".stats").fadeOut();
+    $timeout(function () { $(".settingsTab").fadeIn() }, 1000);
+  }
+  //back to menu from settings
+  $scope.settingsToMenu = () => {
+    $(".settingsTab").fadeOut();
+    $timeout(function () {
+      $(".quickStart").fadeIn();
+      $(".directions").fadeIn();
+      $(".settings").fadeIn();
+      $(".stats").fadeIn();
+    }, 1000);
+  }
+  //to stats
+  $scope.statsTab = () => {
+    $(".quickStart").fadeOut();
+    $(".directions").fadeOut();
+    $(".settings").fadeOut();
+    $(".stats").fadeOut();
+    $timeout(function () { $(".statsTab").fadeIn() }, 1000);
+  }
+  //back to menu from stats
+  $scope.statsToMenu = () => {
+    $(".statsTab").fadeOut();
+    $timeout(function () {
+      $(".quickStart").fadeIn();
+      $(".directions").fadeIn();
+      $(".settings").fadeIn();
+      $(".stats").fadeIn();
+    }, 1000);
+  }
+
+  //settings tab functionality
+  $scope.switchOne = () => {
+    $(".switch1").toggleClass("off");
+    if($(".switch1").hasClass("off")){
+      $scope.switch1 = "off";
+      $rootScope.music = 0;
+      $rootScope.pregameMusic.pause();
+    } else {
+      $scope.switch1 = "on";
+      $rootScope.music = 1;
+      if($rootScope.music != 0){ $rootScope.pregameMusic.play(); }
+    }
+  };
+  $scope.switchTwo = () => {
+    $(".switch2").toggleClass("off");
+    if($(".switch2").hasClass("off")){
+      $scope.switch2 = "off";
+      $rootScope.gamepPlaySound = 0;
+    } else {
+      $scope.switch2 = "on";
+      $rootScope.gamepPlaySound = 1;
+    }
+  };
+
+  //volume keys
+  $scope.off = () => {
+    $rootScope.volume = 0;
+    $rootScope.pregameMusic.volume = $rootScope.volume;
+  };
+  $scope.low = () => {
+    $rootScope.volume = 0.25;
+    $rootScope.pregameMusic.volume = $rootScope.volume;
+  };
+  $scope.medium = () => {
+    $rootScope.volume = 0.5;
+    $rootScope.pregameMusic.volume = $rootScope.volume;
+  };
+  $scope.high = () => {
+    $rootScope.volume = 0.75;
+    $rootScope.pregameMusic.volume = $rootScope.volume;
+  };
+  $scope.loud = () => {
+    $rootScope.volume = 1;
+    $rootScope.pregameMusic.volume = $rootScope.volume;
+  };
 
 }]);
 
@@ -781,13 +906,16 @@ app.service("click", function($rootScope, $filter, map){
 
     }
 
-    if(notFilled){
-      const audio = new Audio('audio/click.wav');
-      audio.play();
-    } else {
-      const playFill = new Audio('audio/fill.wav');
-      playFill.volume = 0.1;
-      playFill.play();
+    if($rootScope.gamepPlaySound != 0){
+      if(notFilled){
+        const audio = new Audio('audio/click.wav');
+        audio.volume = $rootScope.volume;
+        audio.play();
+      } else {
+        const playFill = new Audio('audio/fill.wav');
+        playFill.volume = 0.1*$rootScope.volume;
+        playFill.play();
+      }
     }
 
   };
@@ -1014,15 +1142,39 @@ app.service("click", function($rootScope, $filter, map){
   this.edgeNotClicked = (dataLocation, position) => {
 
     let sideToCheck;
+    let locationOnCorner = (dataLocation === 0|| dataLocation === 7 || dataLocation === 56 || dataLocation === 63);
 
-    if( position === "topRight" ){ sideToCheck = "right" }
-    else if( position === "topLeft" ){ sideToCheck = "left" }
-    else if( position === "bottomRight" ){ sideToCheck = "right" }
-    else if( position === "bottomeLeft" ){ sideToCheck = "left" }
-    else if( position === "rightSide" ){ sideToCheck = "right" }
-    else if( position === "leftSide" ){ sideToCheck = "left" }
-    else if( position === "topSide" ){ sideToCheck = "top" }
-    else if( position === "bottomSide" ){ sideToCheck = "bottom" }
+    if(locationOnCorner){ //check both sides of the corner to see if the line was clicked
+      if( position === "topRight" ){
+        let rightClicked = map.isLineAlreadyCicked(dataLocation, "right");
+        let leftClicked = map.isLineAlreadyCicked(dataLocation, "top");
+        if(!rightClicked){ sideToCheck = "right" }
+        else if (!leftClicked){ sideToCheck = "top" }
+      }
+      else if( position === "topLeft" ){
+        let rightClicked = map.isLineAlreadyCicked(dataLocation, "top");
+        let leftClicked = map.isLineAlreadyCicked(dataLocation, "left");
+        if(!rightClicked){ sideToCheck = "top" }
+        else if (!leftClicked){ sideToCheck = "left" }
+      }
+      else if( position === "bottomRight" ){
+        let rightClicked = map.isLineAlreadyCicked(dataLocation, "right");
+        let leftClicked = map.isLineAlreadyCicked(dataLocation, "bottom");
+        if(!rightClicked){ sideToCheck = "right" }
+        else if (!leftClicked){ sideToCheck = "bottom" }
+      }
+      else if( position === "bottomeLeft" ){
+        let rightClicked = map.isLineAlreadyCicked(dataLocation, "bottom");
+        let leftClicked = map.isLineAlreadyCicked(dataLocation, "left");
+        if(!rightClicked){ sideToCheck = "bottom" }
+        else if (!leftClicked){ sideToCheck = "left" }
+      }
+    } else { //check only the edge to see if it was clicked
+      if( position === "rightSide" ){ sideToCheck = "right" }
+      else if( position === "leftSide" ){ sideToCheck = "left" }
+      else if( position === "topSide" ){ sideToCheck = "top" }
+      else if( position === "bottomSide" ){ sideToCheck = "bottom" }
+    }
 
     let isEdgeNotClicked = ( $(".grid[data=" + dataLocation + "]").children("#" + sideToCheck).attr("data") === "false" );
 

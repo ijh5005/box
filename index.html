@@ -11,7 +11,21 @@
 
 </head>
 <body>
+
 	<div id="container" ng-cloak ng-app="box_game" ng-controller="box_ctrl">
+
+		<!-- SPLASH SCREEN -->
+		<div class="splashContainer">
+			<div class="splashTopLiner"></div>
+			<div class="splashAnimation">
+				<div class="imgHolder"><img src="img/icon.png" alt=""></div>
+			</div>
+			<div class="splashCredit">
+				<div class="developer">
+					<span> {{developer}} </span>
+				</div>
+			</div>
+		</div>
 
 		<!-- COUNT DOWN -->
 		<div class="countDown">
@@ -26,24 +40,26 @@
 		</audio>
 
 		<!-- GAME TOPBAR -->
-		<div id="reset" ng-click="reset()"><span id="reset_text" class="top_bar_text">{{headerText}}</span></div>
-		<div id="top_bar">
+		<div style="display: none" id="reset" ng-click="reset()"><span id="reset_text" class="top_bar_text">{{headerText}}</span></div>
+		<div style="display: none" id="top_bar">
 			<div id="scoreboard">
 				<div id="me"><span class="my_score top_bar_text">{{my_score}}</span></div>
 				<div id="you"><span class="your_score top_bar_text opacity">{{your_score}}</span></div>
 			</div>
 			<div id="timer">
-          <span class="top_bar_text timer_top_bar_text">
+				<div class="timerLiner">
+					<span class="top_bar_text timer_top_bar_text timeConnections">
               <span>{{timer_mins}}:{{timer_secs}}</span>
           </span>
-					<div class="addedTime">
+					<div class="addedTime timeConnections">
 						<span>+2</span>
 					</div>
+				</div>
       </div>
 		</div>
 
 		<!-- GAME BOARD -->
-    <div id="gameLiner">
+    <div style="display: none" id="gameLiner">
         <div id="gameboard">
 						<div id="clickCircle"></div>
             <div class="grid" id="{{x}}" data="{{x}}" ng-repeat="x in grid" ng-controller="line_click" ng-click="computerTurn || edge_click($event)" style="background-color: rgb(255,255,255)">
@@ -57,46 +73,83 @@
     </div>
 
 		<!-- MAIN MENU -->
-		<div class="menuPage" ng-controller="outOfGamePlayFunction">
+		<div style="display: none" class="menuPage" ng-controller="outOfGamePlayFunction">
 			<div class="edgePanel"></div>
 			<div id="middlePanel">
-				<div class="quickStart" ng-click="play()"> {{quickStart}} <span>40 sec game</span></div>
-				<div class="directions" ng-click="directionsTab()"> {{directions}} </div>
-				<div class="directionsTab">
-					<div class="backToMenu" ng-click="directionsToMenu()"><span ng-click="directionsToMenu()">BACK</span></div>
-					<div class="directionBar">
-						<div class="description">
-							<span>click a box side to add 2 seconds to the clock</span>
+				<div class="menuLiner">
+					<div class="quickStart" ng-click="play()"> {{quickStart}} <span>40 sec game</span></div>
+
+					<div class="directions" ng-click="directionsTab()"> {{directions}} </div>
+					<div class="directionsTab">
+						<div class="backToMenu" ng-click="directionsToMenu()"><span ng-click="directionsToMenu()">BACK</span></div>
+						<div class="directionBar">
+							<div class="description">
+								<span>click a box side to add 2 seconds to the clock</span>
+							</div>
+							<div class="img">
+								<img src="img/oneClick.png" alt="">
+							</div>
 						</div>
-						<div class="img">
-							<img src="img/oneClick.png" alt="">
+						<div class="directionBar">
+							<div class="img">
+								<img src="img/fill.png" alt="">
+							</div>
+							<div class="description">
+								<span>Connect 4 box sides to score a point and take another turn</span>
+							</div>
+						</div>
+						<div class="directionBar">
+							<div class="description">
+								<span>if the time runs out you lose..<br>
+								Make the most boxes to Win!</span>
+							</div>
+							<div class="img">
+								<img src="img/time.png" alt="">
+							</div>
+						</div>
+						<div class="directionBar timeBar">
+							<div class="timeDescription">
+								<span>
+									finish with more than 2:00 to earn 3 stars<br><br>
+									finish with more than 1:45 to earn 2 stars<br><br>
+									finish with more than 1:20 to earn 1 stars<br><br>
+								</span>
+							</div>
 						</div>
 					</div>
-					<div class="directionBar">
-						<div class="img">
-							<img src="img/fill.png" alt="">
+
+					<div class="settings" ng-click="settingsTab()"> {{settings}} </div>
+					<div class="settingsTab">
+						<div class="backToMenu" ng-click="settingsToMenu()"><span ng-click="settingsToMenu()">BACK</span></div>
+						<div class="volume settingsOptions">
+							<div class="settingsHeading"><span>{{settingsVolume}}</span></div>
+							<div class="volumeButtons">
+								<div class="volumeChange" ng-click="off()"></div>
+								<div class="volumeChange" ng-click="low()"></div>
+								<div class="volumeChange" ng-click="medium()"></div>
+								<div class="volumeChange" ng-click="high()"></div>
+								<div class="volumeChange" ng-click="loud()"></div>
+							</div>
 						</div>
-						<div class="description">
-							<span>Connect 4 box sides to score a point and take another turn</span>
+						<hr>
+						<div class="music settingsOptions">
+							<div class="settingsHeading"><span>{{music}}</span></div>
+							<div class="switch">
+								<div class="on_off switch1" ng-click="switchOne()">{{switch1}}</div>
+							</div>
+						</div>
+						<hr>
+						<div class="gameplaySounds settingsOptions">
+							<div class="settingsHeading"><span>{{gameplaySounds}}</span></div>
+							<div class="switch">
+								<div class="on_off switch2" ng-click="switchTwo()">{{switch2}}</div>
+							</div>
 						</div>
 					</div>
-					<div class="directionBar">
-						<div class="description">
-							<span>if the time runs out you lose..<br>
-							Make the most boxes to Win!</span>
-						</div>
-						<div class="img">
-							<img src="img/time.png" alt="">
-						</div>
-					</div>
-					<div class="directionBar timeBar">
-						<div class="timeDescription">
-							<span>
-								finish with more than 2:00 to earn 3 stars<br><br>
-								finish with more than 1:45 to earn 2 stars<br><br>
-								finish with more than 1:20 to earn 1 stars<br><br>
-							</span>
-						</div>
+
+					<div class="stats" ng-click="statsTab()"> {{stats}} </div>
+					<div class="statsTab">
+						<div class="backToMenu" ng-click="statsToMenu()"><span ng-click="statsToMenu()">BACK</span></div>
 					</div>
 				</div>
 			</div>
@@ -122,6 +175,8 @@
 			</div>
 			<div class="edgePanel"></div>
 		</div>
+
 	</div>
+
 </body>
 </html>

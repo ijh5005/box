@@ -11,6 +11,57 @@ body {
   /*font-family: 'Candal', sans-serif;*/
 }
 
+.splashContainer {
+  background-color: #FFF;
+  height: 100vh;
+  width: 100vw;
+  transition: background-color 1s ease-out 0s;
+}
+
+.splashTopLiner {
+  height: 35vh;
+  width: 100vw;
+}
+
+.splashAnimation {
+  align-items: center;
+  display: flex;
+  height: 25vh;
+  justify-content: center;
+  width: 100vw;
+}
+
+.imgHolder {
+  transition: left 0.25s linear 0s;
+}
+
+.imgHolder img {
+  transform: perspective( 600px ) rotateY(90deg);
+	transition: transform 1s ease 0s;
+}
+
+.splashCredit {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 40vh;
+  justify-content: center;
+  width: 100vw;
+}
+
+.splashCredit div {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  width: 15em;
+}
+
+.splashCredit span{
+  color: #FFF;
+  font-size: 2em;
+}
+
 #clickCircle {
   background-color: #C12B5F;
   border-radius: 100px;
@@ -53,8 +104,8 @@ body {
 
 #top_bar {
 	display: flex;
-	justify-content: space-around;
-	width: 50em;
+	justify-content: space-between;
+	width: 45em;
 }
 
 #scoreboard,
@@ -113,7 +164,7 @@ body {
 }
 
 #timer {
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 #timer .addedTime {
@@ -127,12 +178,22 @@ body {
   font-size: 2em;
 }
 
+.timerLiner {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
 .top_bar_text {
 	font-size: 4em;
 }
 
 .timer_top_bar_text {
   width: 9rem;
+}
+
+.timeConnections {
+  float: right;
 }
 
 #gameLiner {
@@ -213,14 +274,25 @@ body {
   display: none;
 }
 
+.menuLiner {
+  margin-top: 1em;
+  position: absolute;
+  top: 0;
+}
+
 .quickStart,
 .directions,
-.directionsTab {
+.directionsTab,
+.settings,
+.settingsTab,
+.stats,
+.statsTab {
   align-items: center;
   border: 0.1em solid #FFF;
   border-radius: 0.2em;
   display: flex;
   font-size: 3.4em;
+  height: 2em;
   justify-content: center;
   margin: 0.2em 0;
   padding: 0.2em;
@@ -228,7 +300,9 @@ body {
 }
 
 .quickStart:hover,
-.directions:hover {
+.directions:hover,
+.settings:hover,
+.stats:hover {
   color: #FFF;
 }
 
@@ -248,7 +322,9 @@ body {
   border-radius: 10px;
 }
 
-.directionsTab {
+.directionsTab,
+.settingsTab,
+.statsTab {
   display: none;
   flex-direction: column;
   height: 10em;
@@ -263,6 +339,56 @@ body {
   justify-content: space-around;
   margin: 0.1em 0;
   width: 6em;
+}
+
+.settingsOptions {
+}
+
+.settingsHeading span {
+  font-size: 0.6em;
+}
+
+.volumeButtons,
+.switch {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin: 0 auto;
+  width: 6em;
+}
+
+.volumeChange {
+  background: linear-gradient(to right, rgba(219,219,219,1) 0%, rgba(226,226,226,1) 22%, rgba(254,254,254,1) 100%);
+  border-radius: 5px;
+  height: 1em;
+  margin-top: 0.4em;
+  width: 1em;
+}
+
+.switch {
+  align-items: center;
+  border: solid #FFF;
+  border-radius: 10px;
+  display: flex;
+  justify-content: flex-start;
+  margin: 0.4em auto;
+  width: 4.2em;
+}
+
+.on_off {
+  background: linear-gradient(to right, rgba(219,219,219,1) 0%, rgba(226,226,226,1) 22%, rgba(254,254,254,1) 100%);
+  border: 0.1em solid #000;
+  border-radius: 5px;
+  height: 1em;
+  left: 0em;
+  position: relative;
+  transition: left 0.5s ease-out 0s;
+  width: 2em;
+}
+
+.off {
+  left: 2em;
 }
 
 .description,
@@ -347,6 +473,8 @@ body {
   height: 60%;
   justify-content: center;
   opacity: 0.86;
+  overflow: scroll;
+  position: relative;
   width: 100%;
 }
 
@@ -412,6 +540,22 @@ body {
     #scoreboard, #timer {
         height: 4em;
         width: 10em;
+    }
+
+    .timer_top_bar_text {
+      position: relative;
+      left: 2em;
+    }
+
+    #timer .addedTime {
+        height: 3em;
+        left: -0.5em;
+        position: relative;
+        width: 1rem;
+    }
+
+    #timer .addedTime span {
+        font-size: 1.4em;
     }
 
     #gameboard {
