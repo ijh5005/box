@@ -367,7 +367,6 @@ app.controller("outOfGamePlayFunction", ["$scope", "$rootScope", "$interval", "$
     let split = localStorage.bestFinishTime.split(":");
     localStorage.bestMin = split[0];
     localStorage.bestSec = split[1];
-    console.log(localStorage.bestMin + ":" + localStorage.bestSec);
   }
 
   //sounds
@@ -895,7 +894,7 @@ app.service("click", function($rootScope, $filter, map){
   //update click streak
   this.updateStreak = (num) => {
 
-    if(num > $rootScope.highestGameStreak){ $rootScope.highestGameStreak = num; console.log($rootScope.highestGameStreak); }
+    if(num > $rootScope.highestGameStreak){ $rootScope.highestGameStreak = num }
 
   }
 
@@ -1666,18 +1665,23 @@ app.service("calc", function ($rootScope) {
 
     if((localStorage.clickStreak == undefined) || ($rootScope.clickStreakInGame > localStorage.clickStreak)){
       localStorage.clickStreak = $rootScope.clickStreakInGame - 1;
+      $rootScope.clickStreakValue = localStorage.clickStreak;
     }
 
     if((localStorage.highestScore == undefined) || ($rootScope.score > localStorage.highestScore)){
       localStorage.highestScore = $rootScope.score;
+      $rootScope.highestScoreValue = localStorage.highestScore;
     }
 
     if(localStorage.bestFinishTime == undefined){
-      localStorage.bestFinishTime = $(".currentTime").text()
-    } else if (localStorage.bestMin < parseInt($rootScope.timer_mins)){
-      localStorage.bestFinishTime = $(".currentTime").text()
-    } else if( (localStorage.bestMin == parseInt($rootScope.timer_mins)) && (localStorage.bestSec < parseInt($rootScope.timer_secs)) ){
-      localStorage.bestFinishTime = $(".currentTime").text()
+      localStorage.bestFinishTime = $(".currentTime").text();
+      $rootScope.bestFinishTimeValue = localStorage.bestFinishTime;
+    } else if (localStorage.bestMin > parseInt($rootScope.timer_mins)){
+      localStorage.bestFinishTime = $(".currentTime").text();
+      $rootScope.bestFinishTimeValue = localStorage.bestFinishTime;
+    } else if( (localStorage.bestMin == parseInt($rootScope.timer_mins)) && (localStorage.bestSec > parseInt($rootScope.timer_secs)) ){
+      localStorage.bestFinishTime = $(".currentTime").text();
+      $rootScope.bestFinishTimeValue = localStorage.bestFinishTime;
     }
 
   }
